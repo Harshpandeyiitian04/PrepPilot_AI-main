@@ -30,7 +30,7 @@ export default function LandingPage() {
         <div className="font-mono-display text-xs text-[var(--accent-amber)] tracking-widest uppercase mb-6">
           $ initializing interview session...
         </div>
-        <h1 className="font-mono-display text-5xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-6">
+        <h1 className="font-mono-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-6">
           Four AI agents.<br />
           One adaptive interview.
         </h1>
@@ -38,17 +38,17 @@ export default function LandingPage() {
             InterviewOS reads your resume, runs a live adaptive mock interview across DSA, DBMS, OS, CN, and your actual projects —
           then builds a study plan from what it learns about you, every single session.
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Link
             href="/signup"
-            className="group flex items-center gap-2 bg-[var(--accent-amber)] text-[var(--bg-base)] px-6 py-3 rounded-md font-medium hover:bg-[var(--accent-amber-dim)] transition-colors"
+            className="group flex w-full items-center justify-center gap-2 whitespace-nowrap bg-[var(--accent-amber)] text-[var(--bg-base)] px-6 py-3 rounded-md font-medium hover:bg-[var(--accent-amber-dim)] transition-colors sm:w-auto"
           >
             Start a mock interview
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
             href="/login"
-            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] px-6 py-3 transition-colors"
+            className="whitespace-nowrap text-center text-[var(--text-muted)] hover:text-[var(--text-primary)] px-6 py-3 transition-colors"
           >
             I already have an account
           </Link>

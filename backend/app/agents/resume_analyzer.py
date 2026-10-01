@@ -48,8 +48,9 @@ Resume:
 Return only the raw JSON object, no code fences, no backticks."""
 
     response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
+        model="qwen/qwen3.8-27b",
         messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
         max_tokens=800
     )
 

@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={`${plexMono.variable} ${inter.variable} antialiased font-sans-body`}>
         {children}
       </body>

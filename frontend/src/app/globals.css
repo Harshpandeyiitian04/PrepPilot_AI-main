@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg-base: #0E1110;
-  --bg-card: #161A19;
-  --border-subtle: #2A2F2E;
-  --text-primary: #EDEAE2;
-  --text-muted: #8B928F;
-  --accent-amber: #E8A33D;
-  --accent-amber-dim: #B8822E;
-  --accent-weak: #D9685C;
-  --accent-strong: #6FCF97;
+  color-scheme: light;
+  --bg-base: #F2F6F2;
+  --bg-card: #FFFFFF;
+  --border-subtle: #D5E0D8;
+  --text-primary: #1D3430;
+  --text-muted: #60766F;
+  --accent-amber: #A94B25;
+  --accent-amber-dim: #87391E;
+  --accent-weak: #B43F4B;
+  --accent-strong: #167563;
 }
 
 * {
@@ -20,6 +21,21 @@ html, body {
   background: var(--bg-base);
   color: var(--text-primary);
   scroll-behavior: smooth;
+}
+
+input, textarea {
+  color: var(--text-primary);
+  caret-color: var(--accent-amber);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -46,20 +62,20 @@ html, body {
 /* ---- Polish layer ---- */
 
 .bg-grain {
-  background-image: radial-gradient(circle at 1px 1px, rgba(237,234,226,0.035) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(29,52,48,0.055) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
 .glow-amber {
-  box-shadow: 0 0 0 1px rgba(232,163,61,0.25), 0 8px 32px -8px rgba(232,163,61,0.15);
+  box-shadow: 0 0 0 1px rgba(169,75,37,0.2), 0 8px 28px -10px rgba(169,75,37,0.22);
 }
 
 .glow-strong {
-  box-shadow: 0 0 0 1px rgba(111,207,151,0.3), 0 8px 32px -8px rgba(111,207,151,0.25);
+  box-shadow: 0 0 0 1px rgba(22,117,99,0.22), 0 8px 28px -10px rgba(22,117,99,0.2);
 }
 
 .glow-weak {
-  box-shadow: 0 0 0 1px rgba(217,104,92,0.3), 0 8px 32px -8px rgba(217,104,92,0.2);
+  box-shadow: 0 0 0 1px rgba(180,63,75,0.2), 0 8px 28px -10px rgba(180,63,75,0.18);
 }
 
 @keyframes fadeUp {
@@ -91,8 +107,8 @@ html, body {
 }
 
 @keyframes progressGlow {
-  0%, 100% { box-shadow: 0 0 8px rgba(232,163,61,0.6); }
-  50% { box-shadow: 0 0 16px rgba(232,163,61,0.9); }
+  0%, 100% { box-shadow: 0 0 8px rgba(169,75,37,0.28); }
+  50% { box-shadow: 0 0 16px rgba(169,75,37,0.48); }
 }
 
 .progress-glow {

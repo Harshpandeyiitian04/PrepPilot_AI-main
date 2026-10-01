@@ -91,6 +91,72 @@ Open `http://localhost:3000` in a browser.
 
 The frontend API base URL is configured in `frontend/src/lib/api.ts`. Point it at the local FastAPI server during development or at the deployment URL for a hosted environment.
 
+## Production deployment
+
+The application needs three hosted resources: a PostgreSQL database, a backend service, and a frontend service. Railway is suitable for PostgreSQL and the FastAPI backend; Vercel is suitable for the Next.js frontend.
+
+### 1. Create the PostgreSQL database
+
+1. Create a PostgreSQL service in Railway.
+2. Copy its `DATABASE_URL` connection string.
+3. Run the schema against that database:
+
+```bash
+psql "YOUR_DATABASE_URL" -f backend/app/db/schema.sql
+```
+
+4. Seed the question bank:
+
+```bash
+cd backend
+DATABASE_URL="YOUR_DATABASE_URL" python seed_questions.py
+```
+
+Use PowerShell syntax on Windows:
+
+```powershell
+$env:DATABASE_URL = "YOUR_DATABASE_URL"
+python backend/seed_questions.py
+```
+
+### 2. Deploy the backend to Railway
+
+Create a Railway service from this repository and set its root directory to `backend`. Railway will use `railway.json` and start FastAPI on its assigned port. Add these variables to the backend service:
+
+```env
+DATABASE_URL=your_railway_postgres_url
+GROQ_API_KEY=your_groq_api_key
+JWT_SECRET=long_random_production_secret
+FRONTEND_URL=https://your-frontend.vercel.app
+```
+
+Generate a public Railway domain and verify:
+
+```text
+https://your-backend.up.railway.app/health
+```
+
+The response should be `{"status":"ok"}`.
+
+### 3. Deploy the frontend to Vercel
+
+Import the repository into Vercel, set the project root directory to `frontend`, and add this environment variable before deploying:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-backend.up.railway.app
+```
+
+After Vercel gives you the frontend URL, update the Railway `FRONTEND_URL` value to that exact URL and redeploy the backend.
+
+### 4. Verify the complete system
+
+1. Open the Vercel URL.
+2. Create an account and log in.
+3. Upload a PDF resume.
+4. Start an interview and submit an answer.
+5. Complete the interview and confirm the results page loads.
+6. Check Railway logs if any request fails. The backend must have access to PostgreSQL and Groq, and the frontend URL must match `FRONTEND_URL` exactly.
+
 ## Ownership
 
 InterviewOS is an original project by **Harsh Pandey**.
