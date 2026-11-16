@@ -1,13 +1,18 @@
+# This file updates the long-term scorecard that remembers how a person does on each subject.
+
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
+# Reads the database address from the hidden settings file.
 load_dotenv()
 
+# Opens a database connection that returns each row like a labeled dictionary.
 def get_conn():
     return psycopg2.connect(os.getenv("DATABASE_URL"), cursor_factory=RealDictCursor)
 
+# Mixes this session's subject scores into the person's running averages.
 def update_long_term_performance(user_id: int, topic_breakdown: dict):
     conn = get_conn()
     cur = conn.cursor()
@@ -15,6 +20,7 @@ def update_long_term_performance(user_id: int, topic_breakdown: dict):
     updated_topics = []
 
     for topic, session_score in topic_breakdown.items():
+        # Looks up the old average for this subject, if one exists.
         cur.execute(
             """
             SELECT rolling_average_score, attempt_count
@@ -26,6 +32,7 @@ def update_long_term_performance(user_id: int, topic_breakdown: dict):
         existing = cur.fetchone()
 
         if existing:
+            # Folds the new score into the old average.
             old_avg = float(existing["rolling_average_score"])
             old_count = existing["attempt_count"]
             new_count = old_count + 1
@@ -42,6 +49,7 @@ def update_long_term_performance(user_id: int, topic_breakdown: dict):
                 (round(new_avg, 2), new_count, user_id, topic)
             )
         else:
+            # First time this subject is seen, so the session score becomes the average.
             cur.execute(
                 """
                 INSERT INTO user_topic_performance (user_id, topic, rolling_average_score, attempt_count, last_attempted)

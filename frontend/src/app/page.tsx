@@ -1,12 +1,15 @@
 "use client";
 
+// This file is the home page. It explains the product and links to sign up or log in.
+
 import Link from "next/link";
 import { ArrowRight, Terminal, Brain, TrendingUp } from "lucide-react";
 
+// Draws the welcome page: top bar, headline, a sample of the live trace, and three feature cards.
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
-      {/* Nav */}
+      {/* The top bar with the name and the log-in and get-started links. */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-2">
           <Terminal size={20} className="text-[var(--accent-amber)]" />
@@ -25,7 +28,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* The big headline and the buttons that start or continue an account. */}
       <section className="px-8 pt-24 pb-20 max-w-5xl mx-auto">
         <div className="font-mono-display text-xs text-[var(--accent-amber)] tracking-widest uppercase mb-6">
           $ initializing interview session...
@@ -55,7 +58,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Agent trace preview — signature element teaser */}
+      {/* A preview of the side log that shows what each helper is doing during an interview. */}
       <section className="px-8 pb-24 max-w-5xl mx-auto">
         <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-6 font-mono-display text-sm">
           <div className="flex items-center gap-2 mb-4 text-[var(--text-muted)] text-xs uppercase tracking-widest">
@@ -71,7 +74,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature grid */}
+      {/* Three short cards explaining that questions adapt, use the resume, and remember past scores. */}
       <section className="px-8 pb-24 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="border border-[var(--border-subtle)] rounded-lg p-6">
           <Brain size={20} className="text-[var(--accent-amber)] mb-4" />

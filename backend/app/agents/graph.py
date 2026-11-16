@@ -1,3 +1,5 @@
+# This file wires the interview steps together, like a flowchart: pick a question, score an answer, and plan what to study.
+
 import json
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
@@ -7,9 +9,12 @@ from app.agents.interview_agent import interview_node, tools as interview_tools
 from app.agents.evaluation_agent import evaluation_node
 from app.agents.planner_agent import planner_node
 
+# The interview stops after this many questions.
 MAX_QUESTIONS = 10
+# The helper that actually runs the question-picking tools.
 interview_tool_node = ToolNode(interview_tools)
 
+# Spare questions used only if the AI fails to return a real question.
 FALLBACK_QUESTIONS = {
     "DSA":  {"question_text": "What is dynamic programming? Give an example.", "topic": "DSA", "difficulty": "medium", "expected_concepts": ["memoization", "overlapping subproblems"]},
     "DBMS": {"question_text": "Explain the ACID properties of a transaction.", "topic": "DBMS", "difficulty": "medium", "expected_concepts": ["atomicity", "consistency", "isolation", "durability"]},
@@ -17,13 +22,16 @@ FALLBACK_QUESTIONS = {
     "CN":   {"question_text": "What is the difference between TCP and UDP?", "topic": "CN", "difficulty": "medium", "expected_concepts": ["reliability", "connection-oriented", "latency"]},
     "OOP":  {"question_text": "What are the four pillars of OOP?", "topic": "OOP", "difficulty": "medium", "expected_concepts": ["encapsulation", "inheritance", "polymorphism", "abstraction"]},
 }
+# The order used when picking a spare question that has not been asked yet.
 TOPIC_ORDER = ["DSA", "DBMS", "OS", "CN", "OOP"]
 
+# Reads the question the tools just made and saves it as the question to show the person.
 def set_question_node(state: InterviewState) -> dict:
     messages = state.get("messages", [])
     questions_asked = state.get("questions", [])
     current_question = {}
 
+    # Look through the latest tool replies for a real question.
     for msg in reversed(messages):
         content = getattr(msg, "content", None)
         if not content:
@@ -44,6 +52,7 @@ def set_question_node(state: InterviewState) -> dict:
             if current_question:
                 break
 
+    # If no real question came back, use a spare question instead.
     if not current_question:
         print("[SetQuestion] Tool result parse failed — using fallback")
         topics_covered = [q.get("topic", "") for q in questions_asked]
@@ -63,13 +72,7 @@ def set_question_node(state: InterviewState) -> dict:
     }
 
 
-# ============================================================
-# GRAPH A — Used to START the interview and GENERATE each question.
-# Entry point: resume_analyzer (only matters on the very first call;
-# subsequent calls only touch interview->tools->set_question since
-# resume_data is already in checkpointed state and Resume Analyzer
-# is cheap to skip via the route logic, not the graph itself).
-# ============================================================
+# Builds the flowchart that asks the next interview question.
 def build_question_graph(checkpointer=None):
     graph = StateGraph(InterviewState)
 
@@ -82,15 +85,13 @@ def build_question_graph(checkpointer=None):
     graph.add_edge("interview_tools", "set_question")
     graph.add_edge("set_question", END)
 
+    # Save progress in the database when a memory saver is provided.
     if checkpointer:
         return graph.compile(checkpointer=checkpointer)
     return graph.compile()
 
 
-# ============================================================
-# GRAPH B — Used once, at the very start, to analyze the resume.
-# Separate so it only ever runs exactly once per session.
-# ============================================================
+# Builds the flowchart that reads the resume once at the start.
 def build_resume_graph(checkpointer=None):
     graph = StateGraph(InterviewState)
     graph.add_node("resume_analyzer", resume_analyzer_node)
@@ -102,9 +103,7 @@ def build_resume_graph(checkpointer=None):
     return graph.compile()
 
 
-# ============================================================
-# GRAPH C — Used when the user SUBMITS AN ANSWER. Just evaluation.
-# ============================================================
+# Builds the flowchart that scores the answer the person just submitted.
 def build_evaluation_graph(checkpointer=None):
     graph = StateGraph(InterviewState)
     graph.add_node("evaluation", evaluation_node)
@@ -116,9 +115,7 @@ def build_evaluation_graph(checkpointer=None):
     return graph.compile()
 
 
-# ============================================================
-# GRAPH D — Used once, when MAX_QUESTIONS is reached. Planner only.
-# ============================================================
+# Builds the flowchart that writes the study plan after the last question.
 def build_planner_graph(checkpointer=None):
     graph = StateGraph(InterviewState)
     graph.add_node("planner", planner_node)

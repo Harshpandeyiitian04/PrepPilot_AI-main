@@ -1,12 +1,16 @@
+# This file fills the question box with starter interview questions so the app has something to ask.
+
 import sys, os
 sys.path.insert(0, ".")
 from dotenv import load_dotenv
 import psycopg2
 
+# Reads the database address from the hidden settings file.
 load_dotenv()
 
+# Each line is one question: subject, how hard it is, the question, and the ideas a good answer should mention.
 questions = [
-    # DSA
+    # Questions about solving computer problems, from easy to hard.
     ("DSA", "easy",   "What is the time complexity of binary search?",
      ["O(log n)", "sorted array", "divide and conquer"]),
     ("DSA", "medium", "Explain how a hash table works and how collisions are handled.",
@@ -18,7 +22,7 @@ questions = [
     ("DSA", "hard",   "What is dynamic programming? Give an example.",
      ["memoization", "tabulation", "overlapping subproblems", "optimal substructure"]),
 
-    # DBMS
+    # Questions about how databases store and protect information.
     ("DBMS", "easy",   "What is the difference between SQL and NoSQL databases?",
      ["structured", "schema", "scalability", "ACID"]),
     ("DBMS", "medium", "What is database indexing and why is it used?",
@@ -30,7 +34,7 @@ questions = [
     ("DBMS", "hard",   "What is a deadlock in databases and how is it handled?",
      ["wait-for graph", "timeout", "deadlock detection", "rollback"]),
 
-    # OS
+    # Questions about how a computer runs programs and shares memory.
     ("OS", "easy",   "What is the difference between a process and a thread?",
      ["memory space", "lightweight", "context switching", "PCB"]),
     ("OS", "medium", "What is a deadlock and what are the four necessary conditions?",
@@ -42,7 +46,7 @@ questions = [
     ("OS", "hard",   "What is a semaphore and how does it differ from a mutex?",
      ["counting semaphore", "binary semaphore", "ownership", "signaling"]),
 
-    # CN
+    # Questions about how computers talk to each other over a network.
     ("CN", "easy",   "What is the OSI model? Name its 7 layers.",
      ["physical", "data link", "network", "transport", "session", "presentation", "application"]),
     ("CN", "medium", "What is the difference between TCP and UDP?",
@@ -54,7 +58,7 @@ questions = [
     ("CN", "hard",   "What is HTTP vs HTTPS and how does TLS work?",
      ["encryption", "certificate", "handshake", "symmetric key", "CA"]),
 
-    # OOP
+    # Questions about organizing code into objects.
     ("OOP", "easy",   "What are the four pillars of OOP?",
      ["encapsulation", "inheritance", "polymorphism", "abstraction"]),
     ("OOP", "medium", "What is the difference between method overloading and overriding?",
@@ -67,6 +71,7 @@ questions = [
      ["creational", "structural", "behavioral", "instance control", "object creation"]),
 ]
 
+# Connects to the database and writes every question above into the question box.
 conn = psycopg2.connect(os.getenv("DATABASE_URL"))
 cur = conn.cursor()
 

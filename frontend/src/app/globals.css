@@ -1,5 +1,7 @@
+/* Pulls in the ready-made style helpers used across the site. */
 @import "tailwindcss";
 
+/* The shared colors: page background, cards, text, and the orange and green highlights. */
 :root {
   color-scheme: light;
   --bg-base: #F2F6F2;
@@ -13,31 +15,37 @@
   --accent-strong: #167563;
 }
 
+/* Makes every box count its border as part of its size, so layouts do not jump. */
 * {
   box-sizing: border-box;
 }
 
+/* Sets the page background, text color, and smooth scrolling. */
 html, body {
   background: var(--bg-base);
   color: var(--text-primary);
   scroll-behavior: smooth;
 }
 
+/* Makes typed text and the blinking cursor use the site colors. */
 input, textarea {
   color: var(--text-primary);
   caret-color: var(--accent-amber);
 }
 
+/* Makes the hint text inside empty boxes a soft gray. */
 input::placeholder, textarea::placeholder {
   color: var(--text-muted);
   opacity: 1;
 }
 
+/* Draws an orange ring around whatever the keyboard user is focused on. */
 :focus-visible {
   outline: 2px solid var(--accent-amber);
   outline-offset: 3px;
 }
 
+/* Turns off motion for people who asked their device to reduce animation. */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -46,71 +54,84 @@ input::placeholder, textarea::placeholder {
   }
 }
 
+/* Colors the text someone highlights with the mouse. */
 ::selection {
   background: var(--accent-amber);
   color: var(--bg-base);
 }
 
+/* Applies the typewriter font. */
 .font-mono-display {
   font-family: var(--font-mono);
 }
 
+/* Applies the plain reading font. */
 .font-sans-body {
   font-family: var(--font-sans);
 }
 
-/* ---- Polish layer ---- */
-
+/* A faint dot pattern used behind some pages. */
 .bg-grain {
   background-image: radial-gradient(circle at 1px 1px, rgba(29,52,48,0.055) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
+/* A soft orange glow around a box. */
 .glow-amber {
   box-shadow: 0 0 0 1px rgba(169,75,37,0.2), 0 8px 28px -10px rgba(169,75,37,0.22);
 }
 
+/* A soft green glow around a box. */
 .glow-strong {
   box-shadow: 0 0 0 1px rgba(22,117,99,0.22), 0 8px 28px -10px rgba(22,117,99,0.2);
 }
 
+/* A soft red glow around a box. */
 .glow-weak {
   box-shadow: 0 0 0 1px rgba(180,63,75,0.2), 0 8px 28px -10px rgba(180,63,75,0.18);
 }
 
+/* The motion that slides a block up as it appears. */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Plays the slide-up motion. */
 .animate-fade-up {
   animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* The motion that pops a score into view. */
 @keyframes scoreReveal {
   0% { opacity: 0; transform: scale(0.85); }
   60% { transform: scale(1.04); }
   100% { opacity: 1; transform: scale(1); }
 }
 
+/* Plays the score pop. */
 .animate-score-reveal {
   animation: scoreReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* The motion that slides a small line in from the left. */
 @keyframes traceIn {
   from { opacity: 0; transform: translateX(-6px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
+/* Plays the slide-in motion. */
 .animate-trace-in {
   animation: traceIn 0.3s ease-out both;
 }
 
+/* A gentle pulse on the progress bar. */
 @keyframes progressGlow {
   0%, 100% { box-shadow: 0 0 8px rgba(169,75,37,0.28); }
   50% { box-shadow: 0 0 16px rgba(169,75,37,0.48); }
 }
 
+/* Plays the progress-bar pulse. */
 .progress-glow {
   animation: progressGlow 2s ease-in-out infinite;
 }

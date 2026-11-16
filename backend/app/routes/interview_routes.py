@@ -1,3 +1,5 @@
+# This file starts a practice interview, scores each answer, and returns the final results.
+
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_current_user
 from app.models.schemas import AnswerSubmission
@@ -10,18 +12,21 @@ from app.agents.graph import (
 from app.tools.memory_update import update_long_term_performance
 import json
 
+# Groups the interview addresses under /interview.
 router = APIRouter(prefix="/interview", tags=["interview"])
 
 
+# Builds the memory name used to save this interview's progress.
 def get_thread_config(session_id: int):
     return {"configurable": {"thread_id": f"session-{session_id}"}}
 
 
+# Checks the resume belongs to this person, starts a session, and returns the first question.
 @router.post("/start")
 def start_interview(resume_id: int, current_user: dict = Depends(get_current_user)):
     user_id = current_user["user_id"]
 
-    # Verify resume belongs to this user, and fetch its data
+    # Loads the resume only if it belongs to the logged-in person.
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -34,7 +39,7 @@ def start_interview(resume_id: int, current_user: dict = Depends(get_current_use
         conn.close()
         raise HTTPException(status_code=404, detail="Resume not found for this user")
 
-    # Create a new interview session row
+    # Creates a new interview row and keeps its id.
     cur.execute(
         "INSERT INTO interview_sessions (user_id, resume_id, status) VALUES (%s, %s, 'in_progress') RETURNING id",
         (user_id, resume_id)
@@ -50,11 +55,13 @@ def start_interview(resume_id: int, current_user: dict = Depends(get_current_use
         resume_graph = build_resume_graph(checkpointer=checkpointer)
         question_graph = build_question_graph(checkpointer=checkpointer)
 
+        # Makes sure the resume summary is a dictionary and still includes the original text.
         parsed_data = resume["parsed_data"]
         if isinstance(parsed_data, str):
             parsed_data = json.loads(parsed_data)
         parsed_data["raw_text"] = resume["raw_text"]
 
+        # The starting memory for this interview, before any question is asked.
         initial_state = {
             "user_id": user_id,
             "session_id": session_id,
@@ -85,12 +92,13 @@ def start_interview(resume_id: int, current_user: dict = Depends(get_current_use
     }
 
 
+# Scores the answer. If the interview is finished it saves everything; otherwise it returns the next question.
 @router.post("/answer")
 def submit_answer(payload: AnswerSubmission, current_user: dict = Depends(get_current_user)):
     session_id = payload.session_id
     user_id = current_user["user_id"]
 
-    # Verify session belongs to this user
+    # Loads the session only if it belongs to the logged-in person.
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -118,7 +126,7 @@ def submit_answer(payload: AnswerSubmission, current_user: dict = Depends(get_cu
         idx = eval_result["current_question_idx"]
 
         if idx >= MAX_QUESTIONS:
-            # Interview done — run planner, save everything
+            # The last question is done, so build the study plan and save the whole session.
             planner_result = planner_graph.invoke({}, config)
             topic_breakdown = planner_result["topic_breakdown"]
             recommendations = planner_result["focus_recommendations"]
@@ -136,7 +144,7 @@ def submit_answer(payload: AnswerSubmission, current_user: dict = Depends(get_cu
                 """,
                 (session_id, json.dumps(topic_breakdown), recommendations)
             )
-            # Save all individual answers too
+            # Saves each question, answer, score, and feedback.
             for ans, sc in zip(eval_result["answers"], eval_result["scores"]):
                 cur.execute(
                     """
@@ -168,6 +176,7 @@ def submit_answer(payload: AnswerSubmission, current_user: dict = Depends(get_cu
             }
 
 
+# Returns the saved summary and every scored answer for one finished interview.
 @router.get("/results/{session_id}")
 def get_results(session_id: int, current_user: dict = Depends(get_current_user)):
     user_id = current_user["user_id"]

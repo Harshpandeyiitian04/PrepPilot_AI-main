@@ -1,14 +1,19 @@
+# This file reads a resume and pulls out skills, projects, jobs, and things the person has not covered yet.
+
 import os
 import json
 from groq import Groq
 from dotenv import load_dotenv
 from app.agents.state import InterviewState
 
+# Reads secret settings, including the AI key, from the hidden settings file.
 load_dotenv()
 
+# Sends the resume text to the AI and turns the reply into a simple list of skills, projects, and jobs.
 def resume_analyzer_node(state: InterviewState) -> dict:
     print("[ResumeAnalyzer] Analyzing resume...")
 
+    # Uses the resume text already saved. If none is there, a short sample resume is used.
     raw_text = state.get("resume_data", {}).get("raw_text")
 
     if not raw_text:
@@ -20,6 +25,7 @@ def resume_analyzer_node(state: InterviewState) -> dict:
         Experience: B.Tech CSE student
         """
 
+    # Asks the AI to return only a structured summary of the resume.
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     prompt = f"""You are a resume analyzer for a technical interview platform.
 Analyze this resume and return ONLY a JSON object with no explanation, no markdown:
@@ -54,6 +60,7 @@ Return only the raw JSON object, no code fences, no backticks."""
         max_tokens=800
     )
 
+    # Cleans extra formatting the AI sometimes wraps around its answer.
     text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("```")[1]
@@ -63,6 +70,7 @@ Return only the raw JSON object, no code fences, no backticks."""
         if text.endswith("```"):
             text = text[:-3].strip()
 
+    # Turns the AI text into data. If that fails, an empty summary is used so the app does not crash.
     try:
         resume_data = json.loads(text)
     except Exception as e:

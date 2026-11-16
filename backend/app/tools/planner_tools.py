@@ -1,14 +1,19 @@
+# This file loads a person's older subject scores so the study plan can use them.
+
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 
+# Reads the database address from the hidden settings file.
 load_dotenv()
 
+# Opens a database connection that returns each row like a labeled dictionary.
 def get_conn():
     return psycopg2.connect(os.getenv("DATABASE_URL"), cursor_factory=RealDictCursor)
 
+# Gets past averages for one person, weakest subjects first. The note below is also read by the AI tool.
 @tool
 def fetch_long_term_performance(user_id: int) -> dict:
     """Fetch the user's long-term topic performance across all past sessions.

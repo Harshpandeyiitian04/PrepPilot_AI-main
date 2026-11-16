@@ -1,3 +1,5 @@
+# This file gets interview questions: from the saved list, about a project, or as a follow-up.
+
 import os
 from typing import Optional
 import psycopg2
@@ -5,11 +7,14 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 
+# Reads the database address and AI key from the hidden settings file.
 load_dotenv()
 
+# Opens a database connection that returns each row like a labeled dictionary.
 def get_conn():
     return psycopg2.connect(os.getenv("DATABASE_URL"), cursor_factory=RealDictCursor)
 
+# Picks a random saved question for a subject and difficulty, skipping ones already asked. The note below is also read by the AI tool.
 @tool
 def fetch_question_from_bank(topic: str, difficulty: str, exclude_ids: Optional[str] = "") -> dict:
     """Fetch a question from the question bank for a given topic and difficulty,
@@ -29,6 +34,7 @@ def fetch_question_from_bank(topic: str, difficulty: str, exclude_ids: Optional[
         conn = get_conn()
         cur = conn.cursor()
 
+        # First try to find a question that matches both subject and difficulty.
         if ids_list:
             placeholders = ",".join(["%s"] * len(ids_list))
             cur.execute(
@@ -54,6 +60,7 @@ def fetch_question_from_bank(topic: str, difficulty: str, exclude_ids: Optional[
             )
         row = cur.fetchone()
 
+        # If none matched that difficulty, take any remaining question on the same subject.
         if not row:
             if ids_list:
                 placeholders = ",".join(["%s"] * len(ids_list))
@@ -88,6 +95,7 @@ def fetch_question_from_bank(topic: str, difficulty: str, exclude_ids: Optional[
     except Exception as e:
         return {"error": str(e)}
 
+# Asks the AI to write one question about a project on the resume. The note below is also read by the AI tool.
 @tool
 def generate_project_question(project_name: str, project_description: str, difficulty: str, exclude_questions: Optional[str] = "") -> dict:
     """Generate a personalized interview question based on the user's resume project.
@@ -97,6 +105,7 @@ def generate_project_question(project_name: str, project_description: str, diffi
     from groq import Groq
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+    # Builds a "do not repeat these" note when this project was already asked about.
     avoid_text = ""
     if exclude_questions and exclude_questions.strip():
         avoid_list = exclude_questions.split(" | ")
@@ -138,6 +147,7 @@ Return only the JSON, no explanation."""
     except:
         return {"question_text": text, "topic": "PROJECT", "difficulty": difficulty, "expected_concepts": []}
 
+# Asks the AI for a follow-up when the last answer was weak. The note below is also read by the AI tool.
 @tool
 def generate_followup_question(previous_question: str, previous_answer: str, topic: str) -> dict:
     """Generate a followup question when the user's answer was weak or incomplete.

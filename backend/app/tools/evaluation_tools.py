@@ -1,14 +1,19 @@
+# This file looks up a short correct explanation so an answer can be graded against it.
+
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 
+# Reads the database address from the hidden settings file.
 load_dotenv()
 
+# Opens a database connection that returns each row like a labeled dictionary.
 def get_conn():
     return psycopg2.connect(os.getenv("DATABASE_URL"), cursor_factory=RealDictCursor)
 
+# Searches the explanation box for a matching subject and idea. The note below is also read by the AI tool.
 @tool
 def retrieve_concept_reference(topic: str, concept_key: str) -> dict:
     """Retrieve the reference explanation for a concept to ground the evaluation.

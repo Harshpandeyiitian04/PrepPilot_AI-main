@@ -1,3 +1,5 @@
+# This file looks at the scores and writes a short study plan for what to practice next.
+
 import os
 import json
 from decimal import Decimal
@@ -7,8 +9,10 @@ from dotenv import load_dotenv
 from app.agents.state import InterviewState
 from app.tools.planner_tools import fetch_long_term_performance
 
+# Reads the AI key from the hidden settings file.
 load_dotenv()
 
+# Turns special number and date values into plain values that can be saved as text.
 def json_safe(obj):
     """Recursively convert non-JSON-serializable types (Decimal, datetime) to safe equivalents."""
     if isinstance(obj, list):
@@ -21,12 +25,14 @@ def json_safe(obj):
         return obj.isoformat()
     return obj
 
+# Averages this session's scores and asks the AI for study tips. If that fails, it writes simple tips itself.
 def planner_node(state: InterviewState) -> dict:
     print("[PlannerAgent] Generating personalized roadmap...")
 
     user_id = state.get("user_id", 1)
     scores = state.get("scores", [])
 
+    # Adds up the scores for each subject so we can take an average.
     topic_scores = {}
     topic_counts = {}
     for s in scores:
@@ -39,6 +45,7 @@ def planner_node(state: InterviewState) -> dict:
         for t in topic_scores if topic_counts[t] > 0
     }
 
+    # Loads older scores so the plan can mention long-running weak spots.
     long_term = fetch_long_term_performance.invoke({"user_id": user_id})
     historical = json_safe(long_term.get("performance", []))
 
@@ -63,6 +70,7 @@ Make recommendations specific and actionable. Prioritize weakest topics."""
         max_tokens=500
     )
 
+    # Removes extra formatting around the AI's study tips.
     text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("```")[1]
@@ -72,6 +80,7 @@ Make recommendations specific and actionable. Prioritize weakest topics."""
     if text.endswith("```"):
         text = text[:-3].strip()
 
+    # Uses the AI tips. If they are missing or broken, builds a simple backup list from the lowest scores.
     try:
         result = json.loads(text)
         recommendations = result.get("focus_recommendations", [])

@@ -1,15 +1,19 @@
 "use client";
 
+// This file is the live interview page. It shows one question, sends the answer, and shows the score.
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Terminal, Send } from "lucide-react";
 import api, { Question, AnswerResponse, StartInterviewResponse } from "@/lib/api";
 
+// One line in the side log: which helper spoke, and what it did.
 interface TraceEntry {
   agent: string;
   detail: string;
 }
 
+// Draws the question, the answer box, the score, and the side log of helper activity.
 export default function InterviewPage() {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<number | null>(null);
@@ -25,6 +29,7 @@ export default function InterviewPage() {
   const [questionKey, setQuestionKey] = useState(0);
   const [runningAvg, setRunningAvg] = useState<number[]>([]);
 
+  // Checks the person is logged in and has a resume, then starts the interview.
   useEffect(() => {
     const token = localStorage.getItem("token");
     const resumeId = localStorage.getItem("resume_id");
@@ -33,10 +38,12 @@ export default function InterviewPage() {
     startInterview(Number(resumeId));
   }, [router]);
 
+  // Adds a short note to the side log and keeps only the latest few notes.
   const addTrace = (agent: string, detail: string) => {
     setTrace((prev) => [...prev.slice(-7), { agent, detail }]);
   };
 
+  // Asks the server to start the interview and shows the first question.
   const startInterview = async (resumeId: number) => {
     setLoading(true);
     addTrace("resume_analyzer", "loading parsed resume data");
@@ -54,6 +61,7 @@ export default function InterviewPage() {
     }
   };
 
+  // Sends the typed answer, shows the score, then either loads the next question or the results page.
   const handleSubmit = async () => {
     if (!answer.trim() || !sessionId) return;
     setSubmitting(true);
@@ -93,11 +101,14 @@ export default function InterviewPage() {
     }
   };
 
+  // Picks green, orange, or red based on how high the score is.
   const scoreColor = (score: number) =>
     score >= 70 ? "var(--accent-strong)" : score >= 40 ? "var(--accent-amber)" : "var(--accent-weak)";
+  // Picks a matching glow style for that same score.
   const scoreGlow = (score: number) =>
     score >= 70 ? "glow-strong" : score >= 40 ? "glow-amber" : "glow-weak";
 
+  // The average of the scores given so far in this interview.
   const liveAvg = runningAvg.length ? Math.round(runningAvg.reduce((a, b) => a + b, 0) / runningAvg.length) : null;
 
   if (loading) {
@@ -139,7 +150,7 @@ export default function InterviewPage() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
-        {/* LEFT: Question + answer */}
+        {/* The main area: the question, the answer box, and the score. */}
         <div className="overflow-y-auto px-10 py-10 lg:px-14">
           {question && (
             <div key={questionKey} className="animate-fade-up max-w-2xl">
@@ -204,7 +215,7 @@ export default function InterviewPage() {
           )}
         </div>
 
-        {/* RIGHT: Persistent agent trace sidebar */}
+        {/* The side panel that lists what each helper has done during this interview. */}
         <div className="border-t lg:border-t-0 lg:border-l border-[var(--border-subtle)] bg-[var(--bg-card)] px-6 py-8 overflow-y-auto">
           <div className="flex items-center gap-2 mb-6 text-[var(--text-muted)] uppercase tracking-widest text-xs font-mono-display">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-strong)] animate-pulse" />

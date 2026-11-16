@@ -1,11 +1,14 @@
 "use client";
 
+// This file is the sign-up page. It creates an account and then sends the person to the resume page.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Terminal } from "lucide-react";
 import api, { AuthResponse } from "@/lib/api";
 
+// Draws the sign-up form and remembers the name, email, and password.
 export default function SignupPage() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -14,6 +17,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Creates the account, saves the login pass, and opens the resume page.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

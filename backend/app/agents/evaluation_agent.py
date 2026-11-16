@@ -1,3 +1,5 @@
+# This file grades an interview answer and writes short feedback about what was missing.
+
 import os
 import json
 from groq import Groq
@@ -5,8 +7,10 @@ from dotenv import load_dotenv
 from app.agents.state import InterviewState
 from app.tools.evaluation_tools import retrieve_concept_reference
 
+# Reads the AI key from the hidden settings file.
 load_dotenv()
 
+# Scores the latest answer from 0 to 100 and moves the interview forward by one question.
 def evaluation_node(state: InterviewState) -> dict:
     print("[EvaluationAgent] Evaluating answer...")
 
@@ -16,8 +20,8 @@ def evaluation_node(state: InterviewState) -> dict:
     idx = state.get("current_question_idx", 0)
     user_answer = state.get("current_answer", "").strip()
 
+    # If nothing was typed, the score is zero and the AI is not called.
     if not user_answer:
-        # No answer submitted — score as 0, no API call needed
         score_entry = {
             "topic": topic,
             "score": 0,
@@ -36,6 +40,7 @@ def evaluation_node(state: InterviewState) -> dict:
 
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+    # Looks up a short correct explanation so the score is based on the expected ideas.
     ref_result = retrieve_concept_reference.invoke({
         "topic": topic,
         "concept_key": question_text[:50]
@@ -63,6 +68,7 @@ Return ONLY this JSON, no markdown, no explanation:
         max_tokens=300
     )
 
+    # Removes extra formatting the AI sometimes adds around the score.
     text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("```")[1]
@@ -72,6 +78,7 @@ Return ONLY this JSON, no markdown, no explanation:
         if text.endswith("```"):
             text = text[:-3].strip()
 
+    # Reads the score. If the reply is broken, a middle score of 50 is used.
     try:
         result = json.loads(text)
     except Exception as e:
@@ -92,10 +99,11 @@ Return ONLY this JSON, no markdown, no explanation:
 
     print(f"[EvaluationAgent] Score: {score_entry['score']}/100 for topic {topic}")
 
+    # Saves the score, steps to the next question, and clears the answer so it is not reused.
     return {
         "answers": [answer_entry],
         "scores": [score_entry],
         "current_question_idx": idx + 1,
         "messages": [],
-        "current_answer": ""  # clear it so it doesn't leak into next question
+        "current_answer": ""
     }

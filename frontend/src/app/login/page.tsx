@@ -1,11 +1,14 @@
 "use client";
 
+// This file is the log-in page. It checks the email and password, then sends the person to the resume page.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Terminal } from "lucide-react";
 import api, { AuthResponse } from "@/lib/api";
 
+// Draws the log-in form and remembers what the person types.
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -13,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Sends the email and password, saves the login pass, and opens the resume page.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

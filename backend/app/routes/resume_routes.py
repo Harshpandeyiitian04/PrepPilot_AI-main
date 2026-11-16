@@ -1,3 +1,5 @@
+# This file accepts a resume file, reads it, and saves the summary for the logged-in person.
+
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from app.dependencies import get_current_user
 from app.tools.pdf_tools import extract_text_from_pdf
@@ -5,8 +7,10 @@ from app.agents.resume_analyzer import resume_analyzer_node
 from app.db.database import get_connection
 import json
 
+# Groups the resume addresses under /resume.
 router = APIRouter(prefix="/resume", tags=["resume"])
 
+# Takes a PDF, pulls out the text, asks the analyzer to summarize it, and saves that summary.
 @router.post("/upload")
 async def upload_resume(
     file: UploadFile = File(...),
@@ -22,10 +26,12 @@ async def upload_resume(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    # Runs the resume reader on the text we just pulled out of the PDF.
     fake_state = {"resume_data": {"raw_text": raw_text}}
     result = resume_analyzer_node(fake_state)
     resume_data = result["resume_data"]
 
+    # Saves the original text and the summary, then returns the new resume id.
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -47,6 +53,7 @@ async def upload_resume(
     }
 
 
+# Returns every resume this person has uploaded, newest first.
 @router.get("/list")
 def list_resumes(current_user: dict = Depends(get_current_user)):
     conn = get_connection()

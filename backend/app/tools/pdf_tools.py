@@ -1,6 +1,9 @@
+# This file reads the words out of an uploaded PDF resume.
+
 from pypdf import PdfReader
 import io
 
+# Opens the PDF bytes, joins the text from every page, and complains if the file has no readable words.
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     reader = PdfReader(io.BytesIO(file_bytes))
     text_parts = []

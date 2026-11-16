@@ -1,10 +1,13 @@
 "use client";
 
+// This file is the resume page. It lets a logged-in person upload a PDF and see the skills and projects found in it.
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Terminal, Upload, FileText, ArrowRight, LogOut, CheckCircle2, Briefcase } from "lucide-react";
 import api, { ResumeData } from "@/lib/api";
 
+// Draws the upload screen, then the summary screen after the resume is read.
 export default function ResumePage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
@@ -13,12 +16,14 @@ export default function ResumePage() {
   const [result, setResult] = useState<ResumeData | null>(null);
   const [userName, setUserName] = useState("");
 
+  // Sends the person to log in if they have no login pass, otherwise shows their name.
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/login"); return; }
     setUserName(localStorage.getItem("user_name") || "");
   }, [router]);
 
+  // Accepts only a PDF and remembers the chosen file.
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (selected) {
@@ -31,6 +36,7 @@ export default function ResumePage() {
     }
   };
 
+  // Sends the PDF to the server and saves the resume id for the interview.
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
@@ -50,11 +56,13 @@ export default function ResumePage() {
     }
   };
 
+  // Clears the saved login info and returns to the log-in page.
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
 
+  // The jobs found in the resume. An empty list is used if none were found.
   const experience = (result?.parsed_data as any)?.experience || [];
 
   return (

@@ -1,9 +1,13 @@
+# This file draws a sample resume PDF so the upload feature can be tried without a real resume.
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
+# Starts a new PDF page in letter size.
 c = canvas.Canvas("test_resume.pdf", pagesize=letter)
 c.setFont("Helvetica", 11)
 
+# The lines of text that will appear on the sample resume.
 lines = [
     "Kanav Goyal",
     "B.Tech Computer Science (2023-2027)",
@@ -26,10 +30,12 @@ lines = [
     "Competitive programmer on Codeforces, solved 300+ problems.",
 ]
 
+# Writes each line a little lower than the one before it.
 y = 750
 for line in lines:
     c.drawString(50, y, line)
     y -= 18
 
+# Saves the PDF and prints a note that it was created.
 c.save()
 print("test_resume.pdf created")

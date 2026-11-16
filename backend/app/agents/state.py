@@ -1,6 +1,9 @@
+# This file lists every piece of information the interview keeps in its memory while it runs.
+
 from typing import TypedDict, Annotated
 import operator
 
+# One shared notepad for the whole interview: who is taking it, the resume, the questions, the scores, and whether it is finished.
 class InterviewState(TypedDict):
     user_id: int
     session_id: int

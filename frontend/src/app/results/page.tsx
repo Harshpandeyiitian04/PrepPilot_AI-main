@@ -1,16 +1,20 @@
 "use client";
 
+// This file is the results page. It shows the overall score, study tips, and each question's score.
+
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Terminal, TrendingUp, TrendingDown, RotateCcw } from "lucide-react";
 import api from "@/lib/api";
 
+// The saved interview: when it ran, the subject scores, the study tips, and each answer.
 interface SessionResults {
   session: { id: number; status: string; started_at: string; completed_at: string };
   summary: { topic_breakdown: Record<string, number>; focus_recommendations: string[] } | null;
   answers: { question_text: string; topic: string; score: number; missing_concepts: string[]; feedback: string }[];
 }
 
+// Loads one interview's results and draws the score, the tips, and the question list.
 function ResultsContent() {
   const params = useSearchParams();
   const router = useRouter();
@@ -18,6 +22,7 @@ function ResultsContent() {
   const [results, setResults] = useState<SessionResults | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // If there is no interview to show, go back to the resume page. Otherwise load the results.
   useEffect(() => {
     if (!sessionId) {
       router.push("/resume");
@@ -38,12 +43,16 @@ function ResultsContent() {
     );
   }
 
+  // The average score for each subject. An empty object is used if there is no summary.
   const breakdown = results.summary?.topic_breakdown || {};
+  // The study tips. An empty list is used if none were saved.
   const recommendations = results.summary?.focus_recommendations || [];
+  // One overall number made by averaging the subject scores.
   const overallAvg = Object.values(breakdown).length
     ? Math.round(Object.values(breakdown).reduce((a, b) => a + b, 0) / Object.values(breakdown).length)
     : 0;
 
+  // Picks green, orange, or red based on how high the score is.
   const scoreColor = (score: number) =>
     score >= 70 ? "var(--accent-strong)" : score >= 40 ? "var(--accent-amber)" : "var(--accent-weak)";
 
@@ -69,7 +78,7 @@ function ResultsContent() {
         </div>
         <h1 className="font-mono-display text-3xl font-semibold mb-10">Your results</h1>
 
-        {/* Overall score */}
+        {/* The big overall score next to a small score for each subject. */}
         <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-8 mb-8 flex items-center justify-between">
           <div>
             <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-2">Overall score</div>
@@ -95,7 +104,7 @@ function ResultsContent() {
           </div>
         </div>
 
-        {/* Recommendations */}
+        {/* The study tips written at the end of the interview. */}
         <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-8 mb-8">
           <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-4">
             Planner agent recommendations
@@ -110,7 +119,7 @@ function ResultsContent() {
           </ul>
         </div>
 
-        {/* Per-question breakdown */}
+        {/* One card for each question, with its score and feedback. */}
         <div className="space-y-4">
           <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-2">Question by question</div>
           {results.answers.map((a, i) => (
@@ -133,6 +142,7 @@ function ResultsContent() {
   );
 }
 
+// Waits until the page address is ready, then shows the results. A blank page is shown while waiting.
 export default function ResultsPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[var(--bg-base)]" />}>
